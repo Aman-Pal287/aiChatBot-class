@@ -38,6 +38,12 @@ io.on("connection", (socket) => {
       parts: [{ text: data }],
     });
     const response = await generateResponse(chatHistory);
+
+    chatHistory.push({
+      role: "model",
+      parts: [{ text: response }],
+    });
+
     console.log("Ai response: ", response);
 
     socket.emit("ai-reply", response);
