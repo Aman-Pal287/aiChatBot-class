@@ -1,7 +1,10 @@
 import { useState, useRef, useEffect } from "react";
+import { io } from "socket.io-client";
 import "./App.css";
 
 function App() {
+  const [socket, setSocket] = useState(null);
+
   const [messages, setMessages] = useState([
     { id: 1, text: "Hello! How can I help you today?", sender: "bot" },
   ]);
@@ -15,20 +18,25 @@ function App() {
     const newUserMessage = {
       id: messages.length + 1,
       text: inputValue,
+      timestamp: new Date().toLocaleTimeString(),
       sender: "user",
     };
     setMessages((prev) => [...prev, newUserMessage]);
+
+    socket.emit("ai-message", inputValue);
+
     setInputValue("");
 
     // Simulate bot response after a delay
-    setTimeout(() => {
-      const newBotMessage = {
-        id: messages.length + 2,
-        text: `I received your message: "${inputValue}"`,
-        sender: "bot",
-      };
-      setMessages((prev) => [...prev, newBotMessage]);
-    }, 1000);
+
+    // setTimeout(() => {
+    //   const newBotMessage = {
+    //     id: messages.length + 2,
+    //     text: `I received your message: "${inputValue}"`,
+    //     sender: "bot",
+    //   };
+    //   setMessages((prev) => [...prev, newBotMessage]);
+    // }, 1000);
   };
 
   const handleKeyPress = (e) => {
@@ -40,8 +48,21 @@ function App() {
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
+    let socketInstance = io("http://localhost:3000");
+    setSocket(socketInstance);
+
+    socketInstance.on("ai-reply", (response) => {
+      const newBotMessage = {
+        id: messages.length + 2,
+        text: response,
+        timestamp: new Date().toLocaleTimeString(),
+        sender: "bot",
+      };
+      setMessages((prev) => [...prev, newBotMessage]);
+    });
+
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, []);
 
   return (
     <div className="chat-app">
