@@ -1,15 +1,12 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { io } from "socket.io-client";
 import "./App.css";
 
 function App() {
   const [socket, setSocket] = useState(null);
 
-  const [messages, setMessages] = useState([
-    { id: 1, text: "Hello! How can I help you today?", sender: "bot" },
-  ]);
+  const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
-  const messagesEndRef = useRef(null);
 
   const handleSendMessage = () => {
     if (inputValue.trim() === "") return;
@@ -26,17 +23,6 @@ function App() {
     socket.emit("ai-message", inputValue);
 
     setInputValue("");
-
-    // Simulate bot response after a delay
-
-    // setTimeout(() => {
-    //   const newBotMessage = {
-    //     id: messages.length + 2,
-    //     text: `I received your message: "${inputValue}"`,
-    //     sender: "bot",
-    //   };
-    //   setMessages((prev) => [...prev, newBotMessage]);
-    // }, 1000);
   };
 
   const handleKeyPress = (e) => {
@@ -60,8 +46,6 @@ function App() {
       };
       setMessages((prev) => [...prev, newBotMessage]);
     });
-
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
   return (
@@ -71,12 +55,13 @@ function App() {
       </div>
 
       <div className="chat-messages">
-        {messages.map((message) => (
-          <div key={message.id} className={`message ${message.sender}`}>
-            <div className="message-content">{message.text}</div>
-          </div>
-        ))}
-        <div ref={messagesEndRef} />
+        {messages.map((message) => {
+          return (
+            <div key={message.id} className={`message ${message.sender}`}>
+              <div className="message-content">{message.text}</div>
+            </div>
+          );
+        })}
       </div>
 
       <div className="chat-input-container">
